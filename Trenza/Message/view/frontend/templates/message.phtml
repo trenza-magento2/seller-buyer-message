@@ -1,0 +1,63 @@
+<h1><?php //echo $this->getMessage(); ?></h1>
+
+
+<form action="<?php echo $this->getUrl('message/index/index'); ?>" method="post">
+	<textarea name="message"></textarea>
+	<input type="submit" value="submit" />
+</form>
+
+
+<?php 
+
+    if(isset($_POST['message'])){
+		$message = $_POST['message'];
+		$created_date = date("Y-m-d H:i:s");
+		$this->saveMessage('',1,2,0,$message,0,0,0,0,1,2,$created_date,$created_date);
+	}
+
+	/* Delete Message */
+	if(isset($_POST['delete'])){
+		$this->_resources = \Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\ResourceConnection');
+		$connection= $this->_resources->getConnection();
+		
+		foreach ($_POST['checkbox'] as $value) {
+			//echo $value
+			//$sql = "DELETE FROM Trenza_message WHERE id='$value'";
+			$sql = "UPDATE Trenza_message SET buyer_delete_flg=1 WHERE id='$value'";
+			$connection->query($sql);
+		}
+	}
+
+
+	/* View Message */
+	$this->_resources = \Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\ResourceConnection');
+	$connection= $this->_resources->getConnection();
+	$sql = "select * from Trenza_message where buyer_delete_flg=0 ORDER BY id desc";
+	$result1 = $connection->fetchAll($sql);
+	//cho "<pre>";print_r($result1);
+	echo '<form action="'.$this->getUrl('message/index/index').'" method="POST">';
+	echo '<br><input name="alldelete" type="checkbox" id="allselect">';
+	echo '<input name="delete" type="submit" value="x">';
+	foreach ($result1 as $key=>$value) {
+		if($value['sender_id'] != 1){
+
+			echo '<div style="width: 100%;"><input class="selectmessage" name="checkbox[]" type="checkbox" value="'.$value['id'].'">'.$value['message'].'</div>';
+			//echo '<div style="text-align: right;;width: 100%;"><input name="checkbox[]" type="checkbox" value="'.$value['id'].'">'.$value['message'].'</div>';
+		}else{
+			//echo '<div style="width: 100%;">'.$value['message'].'</div>';
+		}
+		
+	}
+	echo '</form>';
+?>
+
+
+<script>
+require([ 'jquery'], function($){
+jQuery(document).ready(function () {
+    jQuery("#allselect").click(function () {
+        jQuery(".selectmessage").prop('checked', jQuery(this).prop('checked'));
+});
+});
+});
+</script>
